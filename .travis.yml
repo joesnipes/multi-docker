@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker built -t joesnipes/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run joesnipes/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t joesnipes/multi-client ./client
+  - docker build -t joesnipes/multi-nginx ./nginx
+  - docker build -t joesnipes/multi-server ./server
+  - docker build -t joesnipes/multi-worker ./worker
+  # Log in to Docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take images and push to Docker Hub
+  - docker push joesnipes/multi-client
+  - docker push joesnipes/multi-nginx
+  - docker push joesnipes/multi-server
+  - docker push joesnipes/multi-worker
