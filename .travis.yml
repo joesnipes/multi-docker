@@ -13,10 +13,25 @@ after_success:
   - docker build -t joesnipes/multi-nginx ./nginx
   - docker build -t joesnipes/multi-server ./server
   - docker build -t joesnipes/multi-worker ./worker
+  
   # Log in to Docker CLI
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  
   # Take images and push to Docker Hub
   - docker push joesnipes/multi-client
   - docker push joesnipes/multi-nginx
   - docker push joesnipes/multi-server
   - docker push joesnipes/multi-worker
+
+deploy:
+    provider: elasticbeanstalk
+    region: us-east-1
+    app: multi-docker
+    env: MultiDocker-env
+    bucket_name: elasticbeanstalk-us-east-1-051143848560
+    bucket_path: docker-multi
+    on:
+      branch: master
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key:
+      secure: $AWS_SECRET_KEY
